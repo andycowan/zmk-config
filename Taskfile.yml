@@ -1,0 +1,96 @@
+version: '3'
+
+vars:
+  ZMK_IMAGE: zmkfirmware/zmk-build-arm:stable
+  BUILD_DIR: '{{.ROOT_DIR}}/build'
+  FIRMWARE_DIR: '{{.BUILD_DIR}}/firmware'
+  BOARD: nice_nano_v2
+  LEFT_SHIELD: corne_left nice_view_adapter nice_view
+  RIGHT_SHIELD: corne_right nice_view_adapter nice_view
+
+tasks:
+  default:
+    desc: Build both firmware halves
+    cmds:
+      - task: build
+
+  build:
+    desc: Build left and right Corne firmware UF2 files with Docker
+    cmds:
+      - mkdir -p '{{.FIRMWARE_DIR}}'
+      - |
+        docker run --rm \
+          -v '{{.ROOT_DIR}}':/work:ro \
+          -v '{{.FIRMWARE_DIR}}':/out \
+          '{{.ZMK_IMAGE}}' \
+          sh -lc '
+            set -eux
+            BASE=/tmp/zmk-config
+            mkdir -p "$BASE/config"
+            cp -R /work/config/* "$BASE/config/"
+            cd "$BASE"
+            west init -l "$BASE/config"
+            west update --fetch-opt=--filter=tree:0
+            west zephyr-export
+
+            west build -s zmk/app -d /tmp/build-left -b "{{.BOARD}}" -- \
+              -DZMK_CONFIG="$BASE/config" \
+              -DZMK_EXTRA_MODULES=/work \
+              -DSHIELD="{{.LEFT_SHIELD}}"
+            cp /tmp/build-left/zephyr/zmk.uf2 /out/corne_left-{{.BOARD}}-zmk.uf2
+
+            west build -s zmk/app -d /tmp/build-right -b "{{.BOARD}}" -- \
+              -DZMK_CONFIG="$BASE/config" \
+              -DZMK_EXTRA_MODULES=/work \
+              -DSHIELD="{{.RIGHT_SHIELD}}"
+            cp /tmp/build-right/zephyr/zmk.uf2 /out/corne_right-{{.BOARD}}-zmk.uf2
+          '
+      - ls -lh '{{.FIRMWARE_DIR}}'
+
+  build-left:
+    desc: Build only the left Corne firmware UF2 file with Docker
+    cmds:
+      - mkdir -p '{{.FIRMWARE_DIR}}'
+      - task: build-side
+        vars:
+          SIDE: left
+          SHIELD: '{{.LEFT_SHIELD}}'
+
+  build-right:
+    desc: Build only the right Corne firmware UF2 file with Docker
+    cmds:
+      - mkdir -p '{{.FIRMWARE_DIR}}'
+      - task: build-side
+        vars:
+          SIDE: right
+          SHIELD: '{{.RIGHT_SHIELD}}'
+
+  build-side:
+    internal: true
+    cmds:
+      - |
+        docker run --rm \
+          -v '{{.ROOT_DIR}}':/work:ro \
+          -v '{{.FIRMWARE_DIR}}':/out \
+          '{{.ZMK_IMAGE}}' \
+          sh -lc '
+            set -eux
+            BASE=/tmp/zmk-config
+            mkdir -p "$BASE/config"
+            cp -R /work/config/* "$BASE/config/"
+            cd "$BASE"
+            west init -l "$BASE/config"
+            west update --fetch-opt=--filter=tree:0
+            west zephyr-export
+            west build -s zmk/app -d /tmp/build-{{.SIDE}} -b "{{.BOARD}}" -- \
+              -DZMK_CONFIG="$BASE/config" \
+              -DZMK_EXTRA_MODULES=/work \
+              -DSHIELD="{{.SHIELD}}"
+            cp /tmp/build-{{.SIDE}}/zephyr/zmk.uf2 /out/corne_{{.SIDE}}-{{.BOARD}}-zmk.uf2
+          '
+      - ls -lh '{{.FIRMWARE_DIR}}/corne_{{.SIDE}}-{{.BOARD}}-zmk.uf2'
+
+  clean:
+    desc: Remove local firmware build artifacts
+    cmds:
+      - rm -rf '{{.BUILD_DIR}}'
