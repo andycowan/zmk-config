@@ -27,5 +27,5 @@ include:
     - board: nice_nano//zmk
       shield: corne_left nice_view_adapter nice_view
       snippet: zmk-usb-logging
-      cmake-args: -DCONFIG_BT_SMP_LOG_LEVEL_DBG=y -DCONFIG_ZMK_LOG_LEVEL=4
+      cmake-args: -DCONFIG_BT_SMP_LOG_LEVEL_DBG=y
       artifact-name: corne_left_usb_debug
