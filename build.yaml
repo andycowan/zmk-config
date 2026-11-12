@@ -29,3 +29,7 @@ include:
       snippet: zmk-usb-logging
       cmake-args: -DCONFIG_BT_SMP_LOG_LEVEL_DBG=y
       artifact-name: corne_left_usb_debug
+    # Flash to BOTH halves before restoring their respective normal firmware.
+    - board: nice_nano//zmk
+      shield: settings_reset
+      artifact-name: nice_nano_settings_reset
