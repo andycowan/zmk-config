@@ -4,7 +4,8 @@ vars:
   ZMK_IMAGE: zmkfirmware/zmk-build-arm:stable
   BUILD_DIR: '{{.ROOT_DIR}}/build'
   FIRMWARE_DIR: '{{.BUILD_DIR}}/firmware'
-  BOARD: nice_nano_v2
+  BOARD: nice_nano//zmk
+  BOARD_FILE: nice_nano_zmk
   LEFT_SHIELD: corne_left nice_view_adapter nice_view
   RIGHT_SHIELD: corne_right nice_view_adapter nice_view
 
@@ -37,13 +38,13 @@ tasks:
               -DZMK_CONFIG="$BASE/config" \
               -DZMK_EXTRA_MODULES=/work \
               -DSHIELD="{{.LEFT_SHIELD}}"
-            cp /tmp/build-left/zephyr/zmk.uf2 /out/corne_left-{{.BOARD}}-zmk.uf2
+            cp /tmp/build-left/zephyr/zmk.uf2 /out/corne_left-{{.BOARD_FILE}}-zmk.uf2
 
             west build -s zmk/app -d /tmp/build-right -b "{{.BOARD}}" -- \
               -DZMK_CONFIG="$BASE/config" \
               -DZMK_EXTRA_MODULES=/work \
               -DSHIELD="{{.RIGHT_SHIELD}}"
-            cp /tmp/build-right/zephyr/zmk.uf2 /out/corne_right-{{.BOARD}}-zmk.uf2
+            cp /tmp/build-right/zephyr/zmk.uf2 /out/corne_right-{{.BOARD_FILE}}-zmk.uf2
           '
       - ls -lh '{{.FIRMWARE_DIR}}'
 
@@ -86,9 +87,9 @@ tasks:
               -DZMK_CONFIG="$BASE/config" \
               -DZMK_EXTRA_MODULES=/work \
               -DSHIELD="{{.SHIELD}}"
-            cp /tmp/build-{{.SIDE}}/zephyr/zmk.uf2 /out/corne_{{.SIDE}}-{{.BOARD}}-zmk.uf2
+            cp /tmp/build-{{.SIDE}}/zephyr/zmk.uf2 /out/corne_{{.SIDE}}-{{.BOARD_FILE}}-zmk.uf2
           '
-      - ls -lh '{{.FIRMWARE_DIR}}/corne_{{.SIDE}}-{{.BOARD}}-zmk.uf2'
+      - ls -lh '{{.FIRMWARE_DIR}}/corne_{{.SIDE}}-{{.BOARD_FILE}}-zmk.uf2'
 
   clean:
     desc: Remove local firmware build artifacts

@@ -6,11 +6,12 @@ Guidance for AI/coding agents working in this ZMK firmware config repository.
 
 - This repo is a ZMK user config for Andrew's split Corne keyboard.
 - Target hardware in `build.yaml`:
-  - `nice_nano_v2` + `corne_left nice_view_adapter nice_view`
-  - `nice_nano_v2` + `corne_right nice_view_adapter nice_view`
-- ZMK version is pinned to `v0.3` in both:
-  - `.github/workflows/build.yml` (`zmkfirmware/zmk/.github/workflows/build-user-config.yml@v0.3`)
-  - `config/west.yml` (`manifest.defaults.revision: v0.3`)
+  - `nice_nano//zmk` + `corne_left nice_view_adapter nice_view`
+  - `nice_nano//zmk` + `corne_right nice_view_adapter nice_view`
+- ZMK tracks the development `main` branch in both:
+  - `.github/workflows/build.yml` (`zmkfirmware/zmk/.github/workflows/build-user-config.yml@main`)
+  - `config/west.yml` (`manifest.defaults.revision: main`)
+- `nice_nano//zmk` defaults to nice!nano v2; local artifact filenames use `nice_nano_zmk` to avoid path separators.
 - Documentation: <https://zmk.dev/docs>
 
 ## Repository map
@@ -30,7 +31,7 @@ Guidance for AI/coding agents working in this ZMK firmware config repository.
   - `lower_layer` = layer `1`
   - `raise_layer` = layer `2`
 - Base thumb keys use `&mo 1` and `&mo 2`; keep these aligned if layers are reordered.
-- Lower layer includes Bluetooth controls (`BT_CLR`, `BT_SEL 0` through `BT_SEL 4`) and media controls.
+- Lower layer includes media controls. Holding Lower and Raise activates Bluetooth layer `3`, with `BT_CLR` on Left Ctrl and `BT_SEL 0` through `BT_SEL 4` on A/S/D/F/G.
 - `config/corne.conf` enables `CONFIG_ZMK_DISPLAY=y`; RGB underglow settings are present but commented out.
 
 ## Editing rules
@@ -55,12 +56,12 @@ zmk west update
 # Build left half into an isolated output directory.
 REPO="$PWD"
 cd "$REPO/.zmk/zmk/app"
-west build -p -d "$REPO/build/left" -b nice_nano_v2 -- \
+west build -p -d "$REPO/build/left" -b nice_nano//zmk -- \
   -DSHIELD="corne_left nice_view_adapter nice_view" \
   -DZMK_CONFIG="$REPO/config"
 
 # Build right half into a separate output directory.
-west build -p -d "$REPO/build/right" -b nice_nano_v2 -- \
+west build -p -d "$REPO/build/right" -b nice_nano//zmk -- \
   -DSHIELD="corne_right nice_view_adapter nice_view" \
   -DZMK_CONFIG="$REPO/config"
 ```
