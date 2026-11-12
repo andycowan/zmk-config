@@ -23,3 +23,9 @@ include:
       shield: corne_left nice_view_adapter nice_view
     - board: nice_nano//zmk
       shield: corne_right nice_view_adapter nice_view
+    # Temporary diagnostic firmware; flash only to the left half.
+    - board: nice_nano//zmk
+      shield: corne_left nice_view_adapter nice_view
+      snippet: zmk-usb-logging
+      cmake-args: -DCONFIG_BT_SMP_LOG_LEVEL_DBG=y -DCONFIG_ZMK_LOG_LEVEL=4
+      artifact-name: corne_left_usb_debug
